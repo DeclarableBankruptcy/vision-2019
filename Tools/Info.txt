@@ -1,0 +1,1 @@
+Dump your images to be used in sample images, mouse over the image and check the values!
