@@ -12,12 +12,16 @@ files = os.listdir('C:/Users/User1/Desktop/Vision Images/Retro Tape/Low Exposure
 index = 0
 sensorLength = 10
 focalLength = 20
-fieldOfView = 68.5
-screenWidth = 320
+# fieldOfView = 68.5
+# screenWidth = 320
 acrossRat = 0
 degreesAcross = 0
 
 def process (fieldOfView, screenWidth):
+    totalCoordsX = 0
+    totalCoordsY = 0
+    files = os.listdir('C:/Users/User1/Desktop/Vision Images/Retro Tape/Low Exposure/')
+    # index = 0
     while True:
         file = files[index]
         img = cv2.imread('C:/Users/User1/Desktop/Vision Images/Retro Tape/Low Exposure/' + file)
@@ -25,8 +29,7 @@ def process (fieldOfView, screenWidth):
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv, lower_green, upper_green)
         
-        cv2.erode(mask, None, dst=mask, iterations=2)
-        cv2.dilate(mask, None, dst=mask, iterations=2)
+        # cv2.morphologyEx(img, cv2.MORPH_OPEN, None)
 
         contours = cv2.findContours(mask, 1, 2) [-2]
         sorted(contours, key=cv2.contourArea)
@@ -69,3 +72,5 @@ def process (fieldOfView, screenWidth):
         # time.sleep(2)
     cv2.destroyAllWindows()
     cap.release()
+
+process(53, 320)
