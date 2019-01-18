@@ -111,7 +111,7 @@ def trackGroundTape(img, screenWidth):
     box = np.int0(box)
     # print(box)
     cv2.drawContours(img, [box], -1, (0, 0, 255), 1)
-
+    print(centerArray[0][1][2])
     cv2.imshow("IMG", img)
     cv2.imshow("MASK", mask)
 
