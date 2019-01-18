@@ -12,9 +12,6 @@ files = os.listdir("C:/vision-2019/Sample_Images/Ground Tape/High Exposure/")
 
 
 def trackRetroTape(self, fieldOfView, screenWidth):
-    leftTape = np.array()
-    rightTape = np.array()
-    pairs = np.array([[]])
     files = os.listdir("C:/Users/User1/Desktop/Vision Images/Retro Tape/Low Exposure/")
     index = 0
 
@@ -31,39 +28,35 @@ def trackRetroTape(self, fieldOfView, screenWidth):
         cv2.morphologyEx(mask, cv2.MORPH_OPEN, None)
 
         contours = cv2.findContours(mask, 1, 2)[-2]
-        sorted(contours, key=cv2.contourArea)
+        contours.sort(key=cv2.contourArea, reverse=True)
 
         if len(contours) > 1:
-            for cnt in contours:
-                rect = cv2.minAreaRect(cnt)
-                if rect[2] < -13 and rect[2] > -16:
-                    leftTape.append(rect)
-                elif rect[2] < -70 and rect[2] > -77:
-                    rightTape.append(rect)
+            cnt1 = contours[0]
+            cnt2 = contours[1]
 
-        # rect1 = cv2.minAreaRect(cnt1)
-        # box1 = cv2.boxPoints(rect1)
-        # box1 = np.int0(box1)
-        # cv2.drawContours(img, [box1], -1, (0, 0, 255), 1)
+        rect1 = cv2.minAreaRect(cnt1)
+        box1 = cv2.boxPoints(rect1)
+        box1 = np.int0(box1)
+        cv2.drawContours(img, [box1], -1, (0, 0, 255), 1)
 
-        # rect2 = cv2.minAreaRect(cnt2)
-        # box2 = cv2.boxPoints(rect2)
-        # box2 = np.int0(box2)
-        # cv2.drawContours(img, [box2], -1, (0, 0, 255), 1)
+        rect2 = cv2.minAreaRect(cnt2)
+        box2 = cv2.boxPoints(rect2)
+        box2 = np.int0(box2)
+        cv2.drawContours(img, [box2], -1, (0, 0, 255), 1)
 
-        # box1Average = np.average(box1, axis=0)
-        # box2Average = np.average(box2, axis=0)
+        box1Average = np.average(box1, axis=0)
+        box2Average = np.average(box2, axis=0)
 
-        # centerX = int((box1Average[0] + box2Average[0]) / 2)
-        # centerY = int((box1Average[1] + box2Average[1]) / 2)
+        centerX = int((box1Average[0] + box2Average[0]) / 2)
+        centerY = int((box1Average[1] + box2Average[1]) / 2)
 
-        # cv2.circle(img, (centerX, centerY), 2, (0, 0, 255), -1)
+        cv2.circle(img, (centerX, centerY), 2, (0, 0, 255), -1)
 
-        # acrossRat = screenWidth / centerX
-        # degreesAcross = fieldOfView / acrossRat - (fieldOfView / 2)
+        acrossRat = screenWidth / centerX
+        degreesAcross = fieldOfView / acrossRat - (fieldOfView / 2)
 
-        # print(degreesAcross)
-        # print(rect1[2], rect2[2])
+        print(degreesAcross)
+        print(rect1[2], rect2[2])
 
         cv2.imshow("IMG", img)
         cv2.imshow("MASK", mask)
@@ -78,14 +71,10 @@ def trackRetroTape(self, fieldOfView, screenWidth):
 index = 0
 
 
-def trackGroundTape(img, screenWidth):
-    # files = os.listdir("C:/vision-2019/Sample_Images/Ground Tape/High Exposure/")
+def trackGroundTape(img, screenWidth, screenHeight):
     centerArray = []
-    # file = files[index]
-    # img = cv2.imread(
-    #     "C:/vision-2019/Sample_Images/Ground Tape/High Exposure/" + file
-    # )
-    # ret, img = cap.read()
+    boxPointsOnScreen = []
+
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsv, lower_white, upper_white)
 
@@ -93,7 +82,6 @@ def trackGroundTape(img, screenWidth):
     cv2.morphologyEx(mask, cv2.MORPH_CLOSE, None)
 
     contours = cv2.findContours(mask, 1, 2)[-2]
-    # sorted(contours, key=cv2.contourArea)
 
     for cnt in contours:
         rect = cv2.minAreaRect(cnt)
@@ -102,18 +90,21 @@ def trackGroundTape(img, screenWidth):
 
         centerArray.append((distanceFromCenter, rect))
 
-        # box = cv2.boxPoints(rect)
-        # box = np.int0(box)
-        # cv2.drawContours(img, [box], -1, (0, 0, 255), 1)
-
     centerArray.sort(key=lambda a: a[0])
     box = cv2.boxPoints(centerArray[0][1])
     box = np.int0(box)
-    # print(box)
+
     cv2.drawContours(img, [box], -1, (0, 0, 255), 1)
     print(centerArray[0][1][2])
+
     cv2.imshow("IMG", img)
     cv2.imshow("MASK", mask)
+
+    for point in box:
+        if point[0] > 0 and point[1] > 0 and point[0] < screenWidth and point[1] < screenHeight:
+            boxPointsOnScreen.append(point)
+
+    return [centerArray[0][1][2], [(boxPointsOnScreen[0][0] + boxPointsOnScreen[1][0]) / 2, (boxPointsOnScreen[0][1] + boxPointsOnScreen[1][1]) / 2]]
 
 
 cv2.destroyAllWindows()
@@ -121,7 +112,7 @@ cv2.destroyAllWindows()
 while True:
     file = files[index]
     img = cv2.imread("C:/vision-2019/Sample_Images/Ground Tape/High Exposure/" + file)
-    trackGroundTape(img, 320)
+    trackGroundTape(img, 320, 240)
     if cv2.waitKey(1) & 0xFF == ord("g"):
         cv2.destroyAllWindows()
         index += 1
