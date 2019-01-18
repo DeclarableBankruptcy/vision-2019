@@ -101,10 +101,18 @@ def trackGroundTape(img, screenWidth, screenHeight):
     cv2.imshow("MASK", mask)
 
     for point in box:
-        if point[0] > 0 and point[1] > 0 and point[0] < screenWidth and point[1] < screenHeight:
+        if point[0] > 5 and point[1] > 5 and point[0] < screenWidth - 5 and point[1] < screenHeight - 5:
             boxPointsOnScreen.append(point)
 
-    return [centerArray[0][1][2], [(boxPointsOnScreen[0][0] + boxPointsOnScreen[1][0]) / 2, (boxPointsOnScreen[0][1] + boxPointsOnScreen[1][1]) / 2]]
+    if len(boxPointsOnScreen) == 0:
+        # Error code 999 means that there were 0 points found on screen.
+        return [centerArray[0][1][2], [999, 999]]
+    if len(boxPointsOnScreen) == 1:
+        # Error code 998 means that there was 1 point found on screen.
+        return [centerArray[0][1][2], [998, 998]]
+    else:
+        # No error; just return angle and distance of x and y.
+        return [centerArray[0][1][2], [screenWidth - (boxPointsOnScreen[0][0] + boxPointsOnScreen[1][0]) / 2, screenWidth - (boxPointsOnScreen[0][1] + boxPointsOnScreen[1][1]) / 2]]  
 
 
 cv2.destroyAllWindows()
