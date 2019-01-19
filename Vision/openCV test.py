@@ -76,8 +76,8 @@ def trackGroundTape(img):
     boxPointsOnScreen = []
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsv, lower_white, upper_white)
-    screenWidth = np.shape(img)[0]
-    screenHeight = np.shape(img)[1]
+    screenWidth = np.shape(img)[1]
+    screenHeight = np.shape(img)[0]
     halfScreenWidth = screenWidth / 2
     halfScreenHeight = screenHeight / 2
     
@@ -115,11 +115,16 @@ def trackGroundTape(img):
 
     cv2.imshow("IMG", img)
     cv2.imshow("MASK", mask)
-
+    # print(box)
     for point in box:
         if point[0] > 5 and point[1] > 5 and point[0] < screenWidth - 5 and point[1] < screenHeight - 5:
             boxPointsOnScreen.append(point)
-    print(rect[2], len(boxPointsOnScreen))
+            # print(point)
+    # print(rect[2], len(boxPointsOnScreen))
+    # print(boxPointsOnScreen)
+    if len(box) == 0:
+        # Error code 997 means that there were 0 points found from the entire camera, no rectangle at all.
+        return ((997, 997), 997)
     if len(boxPointsOnScreen) == 0:
         # Error code 999 means that there were 0 points found on screen.
         return ((999, 999), rect[2])
@@ -130,7 +135,7 @@ def trackGroundTape(img):
         # No error; just return angle and distance of x and y.
         average = [((boxPointsOnScreen[0][0] + boxPointsOnScreen[1][0]) / 2 - halfScreenWidth) / screenWidth, ((boxPointsOnScreen[1][0] + boxPointsOnScreen[1][1]) / 2 - halfScreenHeight) / screenHeight]
         return (average, rect[2]) 
-        print(((boxPointsOnScreen[0][0] + boxPointsOnScreen[1][0]) / 2 - halfScreenWidth) / screenWidth, ((boxPointsOnScreen[1][0] + boxPointsOnScreen[1][1]) / 2 - halfScreenHeight) / screenHeight)
+        # print(((boxPointsOnScreen[0][0] + boxPointsOnScreen[1][0]) / 2 - halfScreenWidth) / screenWidth, ((boxPointsOnScreen[1][0] + boxPointsOnScreen[1][1]) / 2 - halfScreenHeight) / screenHeight)
 
 
 cv2.destroyAllWindows()
@@ -138,7 +143,8 @@ cv2.destroyAllWindows()
 while True:
     file = files[index]
     img = cv2.imread("C:/vision-2019/Sample_Images/Ground Tape/High Exposure/" + file)
-    trackGroundTape(img)
+    # trackGroundTape(img)
+    print(trackGroundTape(img))
     if cv2.waitKey(1) & 0xFF == ord("g"):
         cv2.destroyAllWindows()
         index += 1
