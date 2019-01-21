@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import os
+import math
 
 
 lower_green = np.array([60, 177, 177])
@@ -124,18 +125,28 @@ def trackGroundTape(img):
     # print(boxPointsOnScreen)
     if len(box) == 0:
         # Error code 997 means that there were 0 points found from the entire camera, no rectangle at all.
-        return ((997, 997), 997)
+        return ((997, 997), findAngle(box))
     if len(boxPointsOnScreen) == 0:
         # Error code 999 means that there were 0 points found on screen.
-        return ((999, 999), rect[2])
+        return ((999, 999), findAngle(box))
     if len(boxPointsOnScreen) == 1:
         # Error code 998 means that there was 1 point found on screen.
-        return ((998, 998), rect[2])
+        return ((998, 998), findAngle(box))
     else:
         # No error; just return angle and distance of x and y.
         average = [((boxPointsOnScreen[0][0] + boxPointsOnScreen[1][0]) / 2 - halfScreenWidth) / screenWidth, ((boxPointsOnScreen[1][0] + boxPointsOnScreen[1][1]) / 2 - halfScreenHeight) / screenHeight]
-        return (average, rect[2]) 
+        return (average, findAngle(box)) 
         # print(((boxPointsOnScreen[0][0] + boxPointsOnScreen[1][0]) / 2 - halfScreenWidth) / screenWidth, ((boxPointsOnScreen[1][0] + boxPointsOnScreen[1][1]) / 2 - halfScreenHeight) / screenHeight)
+
+
+def findAngle(points):
+    sideA = 0
+    sideB = 0
+    sideA = points[0][1] - points[3][1]
+    sideB = points[3][0] - points[0][0]
+    # sideC = math.sqrt(sideA ^ 2 + sideB ^ 2)
+    angle = math.degrees(math.atan2(sideA, sideB))
+    return angle
 
 
 cv2.destroyAllWindows()
