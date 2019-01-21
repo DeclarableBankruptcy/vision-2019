@@ -134,8 +134,6 @@ def trackGroundTape(img):
 
 
 def findAngle(points):
-    sideA = 0
-    sideB = 0
     sideA = points[0][1] - points[3][1]
     sideB = points[3][0] - points[0][0]
 
