@@ -6,8 +6,10 @@ import math
 
 lower_green = np.array([60, 177, 177])
 upper_green = np.array([160, 255, 255])
-lower_white = np.array([0, 70, 70])
-upper_white = np.array([60, 255, 255])
+# lower_white = np.array([0, 70, 70])
+# upper_white = np.array([60, 255, 255])
+lower_white = 200
+upper_white = 255
 files = os.listdir("C:/vision-2019/Sample_Images/Ground Tape/High Exposure/")
 
 '''
@@ -71,8 +73,8 @@ def trackRetroTape(img):
 def trackGroundTape(img):
     boxPointsOnScreen = []
 
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(hsv, lower_white, upper_white)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    mask = cv2.inRange(gray, lower_white, upper_white)
 
     screenWidth = np.shape(img)[1]
     screenHeight = np.shape(img)[0]
@@ -84,6 +86,7 @@ def trackGroundTape(img):
     cv2.morphologyEx(mask, cv2.MORPH_CLOSE, None)
 
     contours = cv2.findContours(mask, 1, 2)[-2]
+    contours = filterNoise(contours)
 
     if len(contours) > 0:
         """ index1 = 0
@@ -105,7 +108,7 @@ def trackGroundTape(img):
         centerArray.sort(key=lambda a: a[0])
         box = cv2.boxPoints(centerArray[0][1])
         box = np.int0(box)
- """
+ """    
         contours.sort(key=cv2.contourArea, reverse=True)
         rect = cv2.minAreaRect(contours[0])
         box = cv2.boxPoints(rect)
@@ -113,24 +116,30 @@ def trackGroundTape(img):
 
         cv2.drawContours(img, [box], -1, (0, 0, 255), 1)
 
+        cv2.imshow("IMG", img)
+        cv2.imshow("MASK", mask)
+
+        boxPointsOnScreen = filterPoints(box, screenWidth, screenHeight)
+
+        if len(box) == 0:
+            # Error code 997 means that there were 0 points found from the entire camera, no rectangle at all.
+            return ((997, 997), findAngle(box))
+        if len(boxPointsOnScreen) == 0:
+            # Error code 999 means that there were 0 points found on screen.
+            return ((999, 999), findAngle(box))
+        if len(boxPointsOnScreen) == 1:
+            # Error code 998 means that there was 1 point found on screen.
+            return ((998, 998), findAngle(box))
+        else:
+            # No error; just return angle and distance of x and y.
+            average = [((boxPointsOnScreen[0][0] + boxPointsOnScreen[1][0]) / 2 - halfScreenWidth) / screenWidth, ((boxPointsOnScreen[1][0] + boxPointsOnScreen[1][1]) / 2 - halfScreenHeight) / screenHeight]
+            return (average, findAngle(box))
+
     cv2.imshow("IMG", img)
     cv2.imshow("MASK", mask)
 
-    boxPointsOnScreen = filterPoints(box, screenWidth, screenHeight)
-
-    if len(box) == 0:
-        # Error code 997 means that there were 0 points found from the entire camera, no rectangle at all.
-        return ((997, 997), findAngle(box))
-    if len(boxPointsOnScreen) == 0:
-        # Error code 999 means that there were 0 points found on screen.
-        return ((999, 999), findAngle(box))
-    if len(boxPointsOnScreen) == 1:
-        # Error code 998 means that there was 1 point found on screen.
-        return ((998, 998), findAngle(box))
-    else:
-        # No error; just return angle and distance of x and y.
-        average = [((boxPointsOnScreen[0][0] + boxPointsOnScreen[1][0]) / 2 - halfScreenWidth) / screenWidth, ((boxPointsOnScreen[1][0] + boxPointsOnScreen[1][1]) / 2 - halfScreenHeight) / screenHeight]
-        return (average, findAngle(box)) 
+    # Return 0 if no contours found.
+    return 0
 
 
 def findAngle(points):
@@ -147,6 +156,14 @@ def filterPoints(box, screenWidth, screenHeight):
         if point[0] > 5 and point[1] > 5 and point[0] < screenWidth - 5 and point[1] < screenHeight - 5:
             boxPointsOnScreen.append(point)
     return boxPointsOnScreen
+
+
+def filterNoise(contours):
+    cnts = []
+    for contour in contours:
+        if cv2.contourArea(contour) > 10:
+            cnts.append(contour)
+    return cnts
 
 
 if __name__ == '__main__':
