@@ -81,14 +81,15 @@ def trackGroundTape(img):
     halfScreenWidth = screenWidth / 2
     halfScreenHeight = screenHeight / 2
 
-    cv2.morphologyEx(mask, cv2.MORPH_OPEN, None)
-    cv2.morphologyEx(mask, cv2.MORPH_CLOSE, None)
+    # cv2.morphologyEx(mask, cv2.MORPH_OPEN, None)
+    # cv2.morphologyEx(mask, cv2.MORPH_CLOSE, None)
 
     contours = cv2.findContours(mask, 1, 2)[-2]
-    contours = filterNoise(contours)
+    contours = filterNoise(contours)  # Filter small contours from the screen.
 
     if len(contours) > 0:
         '''
+        Center code:
         for cnt in contours:
             rect = cv2.minAreaRect(cnt)
             xCoord = rect[0][0]
@@ -110,27 +111,49 @@ def trackGroundTape(img):
         cv2.imshow("IMG", img)
         cv2.imshow("MASK", mask)
 
-        boxPointsOnScreen = np.array(filterPoints(box, screenWidth, screenHeight))
+        boxPointsOnScreen = np.array(filterPoints(box, screenWidth, screenHeight))  # Get all the boxpoints on the screen.
 
-        if len(boxPointsOnScreen) == 2:
-            # return ((np.mean(boxPointsOnScreen, 0) - halfScreenWidth) / screenWidth, (np.mean(boxPointsOnScreen, 1) - halfScreenHeight) / screenHeight, findAngle(box))
-            return (np.mean(boxPointsOnScreen, axis=0)[0] / halfScreenWidth * 2 - 1, np.mean(boxPointsOnScreen, 0)[1] / halfScreenHeight * 2 - 1, findAngle(box))
-            # return np.mean(boxPointsOnScreen, 0)
-        else:
-            return (np.mean(box, axis=0)[0] / halfScreenWidth * 2 - 1, np.mean(box, 0)[1] / halfScreenHeight * 2 - 1, findAngle(box))
-            # return np.mean(box, 0)
+        # Cases:
+        if len(boxPointsOnScreen) == 2:  # If two points are on the screen, return the point between them.
+            averageX = np.mean(boxPointsOnScreen, axis=0)[0]
+            averageY = np.mean(boxPointsOnScreen, axis=0)[1]
+
+            x_float = -((averageX / halfScreenWidth) - 1)
+            y_float = -((averageY / halfScreenHeight) - 1)
+
+            return x_float, y_float, findAngle((boxPointsOnScreen[0], boxPointsOnScreen[1]), oneSide=True)
+        elif len(boxPointsOnScreen) == 1:  # If one point is ont the screen, return its coordinates.
+            x_float = -((boxPointsOnScreen[0][0] / halfScreenWidth) - 1)
+            y_float = -((boxPointsOnScreen[0][1] / halfScreenHeight) - 1)
+
+            return 0, x_float, y_float
+        else:  # For any other case, return the average point of the contour.
+            averageX = np.mean(box, axis=0)[0]
+            averageY = np.mean(box, axis=0)[1]
+
+            x_float = -((averageX / halfScreenWidth) - 1)
+            y_float = -((averageY / halfScreenHeight) - 1)
+
+            return x_float, y_float, findAngle(box)
 
     # Return 0 if no contours found.
-    return 0
+    return float("NaN"), float("NaN"), float("NaN")
 
 
-def findAngle(points):
-    side = findLongestSide((points[0], points[1]), (points[1], points[2]))
-    opposite = side[0][0] - side[1][0]
-    adjacent = side[0][1] - side[1][1]
+def findAngle(points, oneSide=False):
+    if oneSide:
+        side = (points[0], points[1])
+        opposite = side[0][0] - side[1][0]
+        adjacent = side[0][1] - side[1][1]
+        angle = math.atan2(opposite, adjacent)
+        angle -= 1.5708  # Subtract 90 degrees in radians.
+    else:
+        side = findLongestSide((points[0], points[1]), (points[1], points[2]))
+        opposite = side[0][0] - side[1][0]
+        adjacent = side[0][1] - side[1][1]
+        angle = math.atan2(opposite, adjacent)
 
-    angle = math.atan2(opposite, adjacent)
-    return angle
+    return math.degrees(angle)
 
 
 def filterPoints(box, screenWidth, screenHeight):
@@ -150,8 +173,8 @@ def filterNoise(contours):
 
 
 def findLongestSide(side1, side2):
-    longestSide = max((side1, side2), key=lambda a: abs(a[0][0] - a[1][0]) + abs(a[0][1] - a[1][1]))
-    return longestSide
+    longest_side = max((side1, side2), key=lambda a: abs(a[0][0] - a[1][0]) + abs(a[0][1] - a[1][1]))
+    return longest_side
     
 
 if __name__ == '__main__':
