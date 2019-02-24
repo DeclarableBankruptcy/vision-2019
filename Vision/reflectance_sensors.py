@@ -15,11 +15,11 @@ GPIO.setup(chan_list, GPIO.OUT, initial=GPIO.HIGH)
 def track_sensors(channels):
     activated = []
     for channel in channels:
-        old_time = datetime.time.microsecond()
+        old_time = datetime.now().microsecond
         GPIO.setup(channel, GPIO.IN)
         while GPIO.input(channel) == GPIO.HIGH:
             datetime.delay(0.001)
-        new_time = datetime.time.microsecond()
+        new_time = datetime.now().microsecond
         elapsed = new_time - old_time
         if elapsed < upper_time and elapsed > lower_time:
             activated.append(channel)
