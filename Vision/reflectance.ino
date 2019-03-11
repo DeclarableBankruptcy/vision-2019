@@ -1,5 +1,8 @@
-int sensorPin = 7;
-int dataOutPin = 8;
+int leftChan[] = {0, 1, 2, 3, 4};
+int rightChan[] = {5, 6, 7, 8, 9};
+int dataOutLeft = 10;
+int dataOutCenter = 11;
+int dataOutRight = 12;
 int threshold = 0;
 bool reading = false;
 int oldTime, newTime, elapsed;
@@ -28,4 +31,8 @@ void loop() {
   else {
     digitalWrite(dataOutPin, LOW);
   }
+}
+
+void trackRightChannels() {
+  
 }
