@@ -4,7 +4,6 @@ int dataOutLeft = 10;
 int dataOutCenter = 11;
 int dataOutRight = 12;
 int threshold = 0;
-bool reading = false;
 int oldTime, newTime, elapsed;
 void setup() {
   pinMode(7, OUTPUT);
@@ -12,27 +11,69 @@ void setup() {
 }
 
 void loop() {
-  digitalWrite(sensorPin, HIGH);
-  delay(1);
-  
-  oldTime = millis();
-  pinMode(7, INPUT);
-  
-  while (digitalRead(7) == HIGH) {
-    
-  }
-  
-  newTime = millis();
-  elapsed = newTime - oldTime;
-  
-  if (elapsed > threshold) {
-    digitalWrite(dataOutPin, HIGH);
-  }
-  else {
-    digitalWrite(dataOutPin, LOW);
-  }
+//    int leftCount = trackLeftChannels(leftChan);
+//    int rightCount = trackRightChannels(0);
+//    if (leftCount == 1 && rightCount == 1) {
+//        digitalWrite(dataOutCenter, HIGH);
+//    }
+//    else if (leftCount < rightCount) {
+//        digitalWrite(dataOutRight, HIGH);
+//    }
+//    else if (leftCount > rightCount) 
+  testSensor(0);
 }
 
-void trackRightChannels() {
+//int trackRightChannels(int chans) {
+//   // for (int i = 0; i < chans.length; i++) {
+//       digitalWrite(i, HIGH);
+//       delay(1);
+//
+//       oldTime = millis();
+//       pinMode(i, INPUT);
+//
+//       while (digitalRead(i) == HIGH) { }
+//
+//       newTime = millis();
+//       elapsed = newTime - oldTime;
+//
+//       if (elapsed > threshold) {
+//           rightCount++;
+//       }
+//   // }
+//   return rightCount;
+//}
+//
+//int trackLeftChannels(int chans[]) {
+//    for (int i = 0; i < chans.length; i++) {
+//       digitalWrite(i, HIGH);
+//       delay(1);
+//
+//       oldTime = millis();
+//       pinMode(i, INPUT);
+//
+//       while (digitalRead(i) == HIGH) { }
+//
+//       newTime = millis();
+//       elapsed = newTime - oldTime;
+//
+//       if (elapsed > threshold) {
+//           leftCount++;
+//       }
+//       return leftCount;
+//   }
+//}
+
+void testSensor(int sensor) {
+  digitalWrite(sensor, HIGH);
+  delay(1);
   
+  int oldTime = millis();
+  pinMode(sensor, HIGH);
+
+  while (digitalRead == HIGH) { }
+
+  int newTime = millis();
+  int elapsed = newTime - oldTime;
+
+  Serial.println(elapsed);
 }
